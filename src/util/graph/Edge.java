@@ -38,6 +38,10 @@ public class Edge implements Comparable<Edge> {
 	public void setWeight(int weight) {
 		this.weight = weight;
 	}
+	
+	public boolean intersects(Edge edge) {
+		return false;
+	}
 
 	@Override
 	public int compareTo(Edge edge) {

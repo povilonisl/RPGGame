@@ -1,4 +1,4 @@
-package util.LinkedList;
+package util.linkedList;
 
 public class LinkNode<T> {
 	private T data;

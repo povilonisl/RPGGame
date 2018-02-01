@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import objects.PolygonObject;
+import util.bst.Bst;
 import util.graph.*;
 
 public class FindPath {
@@ -51,7 +52,18 @@ public class FindPath {
 	}
 
 	public Set<Vertex> visibleVertices(Vertex v, ArrayList<Polygon> polygons) {
-		
+		LinkedList<Vertex> sortedVertices = sortVertices(v, polygons);
+		Bst obstacleEdges = findObstacleEdges(v, polygons);
+		Set<Vertex> visibleEdges = new HashSet<Vertex>();
+
+		for (int i = 0; i < sortedVertices.size(); i++) {
+			Vertex w = sortedVertices.get(i);
+			if (visible(w)) {
+				visibleEdges.add(w);
+			}
+
+		}
+
 		return null;
 	}
 
@@ -97,5 +109,18 @@ public class FindPath {
 		}
 
 		return sortedVertices;
+	}
+	
+	public Bst findObstacleEdges(Vertex v, ArrayList<Polygon> polygons) {
+		for(Polygon p : polygons) {
+			for(int i = 0; i < p.npoints; i++) {
+				int i = p.xpoints[i];
+			}
+		}
+		return null;
+	}
+	
+	public boolean visible(Vertex w) {
+		return false;
 	}
 }
