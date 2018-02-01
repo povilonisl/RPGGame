@@ -21,7 +21,7 @@ public class Window extends Canvas {
 	 * @param title title of the window
 	 * @param class1 The content of the window
 	 */
-	public Window(int width, int height, String title, Class1 class1) {
+	public Window(int width, int height, String title, Game game) {
 		JFrame frame = new JFrame(title);
 		
 		//Size of the window
@@ -32,8 +32,8 @@ public class Window extends Canvas {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
-		frame.add(class1);
+		frame.add(game);
 		frame.setVisible(true);
-		class1.start();
+		game.start();
 	}
 }

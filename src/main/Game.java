@@ -8,7 +8,7 @@ import java.util.Random;
 import input.KeyInput;
 import input.MouseInput;
 import objects.Player;
-import objects.Tree;
+import objects.PolygonObject;
 
 public class Game extends Canvas implements Runnable{
 
@@ -29,15 +29,14 @@ public class Game extends Canvas implements Runnable{
 		this.addKeyListener(new KeyInput(handler));
 		this.addMouseListener(new MouseInput(handler));
 		
-		//new Window(WIDTH, HEIGHT, "Let's Build a game!", this);
+		new Window(WIDTH, HEIGHT, "Let's Build a game!", this);
 		
-		handler.addObject(new Player(100, 100, 35, 35, ID.Player, handler));
+		handler.addObject(new Player(100, 100, ID.Player, handler));
 		
 		r = new Random();
 		
-		for(int i = 0; i < 10; i++) {
-			handler.addObject(new Tree(r.nextInt(WIDTH), r.nextInt(HEIGHT), 40, 40, ID.Tree));
-		}
+		handler.addObject(new PolygonObject(new int[] {r.nextInt(500), r.nextInt(500), r.nextInt(500)}, new int[] {r.nextInt(500),r.nextInt(500), r.nextInt(500)}, 3, ID.Polygon));
+
 	}
 	
 	public synchronized void start() {
@@ -91,7 +90,7 @@ public class Game extends Canvas implements Runnable{
 			//after 1 second has passed, display the FPS
 			if(System.currentTimeMillis() - timer > 1000) {
 				timer += 1000;
-				//System.out.println("FPS: " + frames);
+				System.out.println("FPS: " + frames);
 				frames = 0;
 			}
 			count = 0;

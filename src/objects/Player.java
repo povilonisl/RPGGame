@@ -14,11 +14,12 @@ public class Player extends GameObject{
 	private Handler handler;
 	private Ellipse2D.Double shape;
 	private Area a;
+	public static final int pWIDTH = 35, pHEIGHT = 35;
 
-	public Player(int x, int y, int width, int height, ID id, Handler handler) {
-		super(x, y, width, height, id);
+	public Player(int x, int y, ID id, Handler handler) {
+		super(x, y, id);
 		this.handler = handler;
-		shape = new Ellipse2D.Double(x, y, width, height);
+		shape = new Ellipse2D.Double(x, y, pWIDTH, pHEIGHT);
 		a = new Area();
 	}
 	
@@ -59,8 +60,8 @@ public class Player extends GameObject{
 		g2d.setColor(Color.BLACK);
 		shape.x = x;
 		shape.y = y;
-		shape.width = width;
-		shape.height = height;
+		shape.width = pWIDTH;
+		shape.height = pHEIGHT;
 		g2d.fill(shape);
 	}
 

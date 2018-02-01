@@ -11,7 +11,6 @@ public abstract class GameObject {
 	protected ID id; //id of the object
 	protected int valX =0, valY=0; //velocity of the object
 	protected int targetX, targetY; //where the object should be
-	protected int width, height; //width and height of the object
 	
 	/**
 	 * Information about the objects in the game
@@ -22,13 +21,11 @@ public abstract class GameObject {
 	 * @param height the height of the object
 	 * @param id the ID of the object
 	 */
-	public GameObject(int x, int y, int width, int height, ID id) {
+	public GameObject(int x, int y, ID id) {
 		this.x = x;
 		this.y = y;
 		this.targetX = x;
 		this.targetY = y;
-		this.width = width;
-		this.height = height;
 		this.id = id;
 	}
 	
@@ -95,20 +92,5 @@ public abstract class GameObject {
 		this.valY = valY;
 	}
 
-	public int getWidth() {
-		return width;
-	}
-
-	public void setWidth(int width) {
-		this.width = width;
-	}
-
-	public int getHeight() {
-		return height;
-	}
-
-	public void setHeight(int height) {
-		this.height = height;
-	}
 
 }

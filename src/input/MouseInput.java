@@ -7,6 +7,7 @@ import java.awt.event.MouseWheelEvent;
 import main.Handler;
 import main.ID;
 import objects.GameObject;
+import objects.Player;
 
 public class MouseInput extends MouseAdapter {
 
@@ -51,7 +52,7 @@ public class MouseInput extends MouseAdapter {
 		//location of where mouse was clicked
 		int targetX = e.getX();
 		int targetY = e.getY();
-		GameObject player = null; //store player in case later its found that the coordinates are within another object and we should cancel the movement.
+		Player player = null; //store player in case later its found that the coordinates are within another object and we should cancel the movement.
 		
 		//Go through all of the objects in the game
 		for(int i = 0; i < handler.sizeObjects(); i++) {
@@ -59,12 +60,12 @@ public class MouseInput extends MouseAdapter {
 			
 			//if the object is player
 			if(tempObject.getId() == ID.Player) {
-				player = tempObject;
+				player = (Player) tempObject;
 				//Set the coordinates of where the player should move. 
 				//(- player.getWidth()/2) - this is due to player expecting the sprite to be in the middle of where mouse was clicked.
 				//If it is not changed then top corner of sprite will be where the user clicked, instead of the centre.
-				player.setTargetX(targetX - player.getWidth()/2);
-				player.setTargetY(targetY - player.getHeight()/2);
+				player.setTargetX(targetX - player.pWIDTH/2);
+				player.setTargetY(targetY - player.pHEIGHT/2);
 				
 				//if the object is tree, coordinates are within the object.
 			}else if(tempObject.getId() == ID.Tree) {

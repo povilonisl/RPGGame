@@ -40,7 +40,7 @@ public class Class1 extends Canvas implements Runnable{
 	
 	public Class1() {
 		
-		new Window(WIDTH, HEIGHT, "Test A*", this);
+		//new Window(WIDTH, HEIGHT, "Test A*", this);
 
 		 for(int i = 0; i < cols; i++) {
 			 for(int j = 0; j < rows; j++) {
