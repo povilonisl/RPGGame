@@ -5,13 +5,17 @@ import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
-import objects.PolygonObject;
-import util.bst.Bst;
+import util.bst.*;
 import util.graph.*;
 
+/** 
+ * Implementation of what it seems to be Lees Visibility Graph.
+ * 
+ * @author 0VOID0
+ *
+ */
 public class FindPath {
 	public FindPath() {
 
@@ -53,7 +57,7 @@ public class FindPath {
 
 	public Set<Vertex> visibleVertices(Vertex v, ArrayList<Polygon> polygons) {
 		LinkedList<Vertex> sortedVertices = sortVertices(v, polygons);
-		Bst obstacleEdges = findObstacleEdges(v, polygons);
+		Bst obstacleEdges = findObstacleEdges(sortedVertices);
 		Set<Vertex> visibleEdges = new HashSet<Vertex>();
 
 		for (int i = 0; i < sortedVertices.size(); i++) {
@@ -70,7 +74,7 @@ public class FindPath {
 	public LinkedList<Vertex> sortVertices(Vertex v, ArrayList<Polygon> polygons) {
 		LinkedList<Vertex> sortedVertices = new LinkedList<Vertex>();
 		LinkedList<Double> sortedAngles = new LinkedList<Double>();
-
+		
 		int vertexX = v.getLabel().x;
 		int vertexY = v.getLabel().y;
 
@@ -80,6 +84,11 @@ public class FindPath {
 		double angle;
 
 		for (Polygon p : polygons) {
+			LinkedList<Vertex> polyVertices = new LinkedList<Vertex>();
+			for(int i = 0; i < p.npoints; i++) {
+				polyVertices.add(new Vertex(new Point(p.xpoints[i],  p.ypoints[i])));
+			}
+			
 			for (int i = 0; i < p.npoints; i++) {
 				tempX = p.xpoints[i];
 				tempY = p.ypoints[i];
@@ -103,24 +112,64 @@ public class FindPath {
 					j++;
 				}
 				sortedAngles.add(j, angle);
-				sortedVertices.add(j, new Vertex(new Point(tempX, tempY)));
+				Vertex tempVertex = polyVertices.get(i);
+				if(i+1 < polyVertices.size()) {
+					Edge tempEdge = new Edge(tempVertex, polyVertices.get(i+1));
+					tempVertex.addNeighbor(tempEdge);
+					polyVertices.get(i+1).addNeighbor(tempEdge);
+				}else {
+					Edge tempEdge = new Edge(tempVertex, polyVertices.get(0));
+					tempVertex.addNeighbor(tempEdge);
+					polyVertices.get(0).addNeighbor(tempEdge);
+				}
+				sortedVertices.add(j, tempVertex);
 
 			}
 		}
-
+		
 		return sortedVertices;
 	}
 	
-	public Bst findObstacleEdges(Vertex v, ArrayList<Polygon> polygons) {
-		for(Polygon p : polygons) {
-			for(int i = 0; i < p.npoints; i++) {
-				int i = p.xpoints[i];
+	public Bst<Integer, Edge> findObstacleEdges(LinkedList<Vertex> sortedVertices) {
+		Set<Edge> lookOut = new HashSet<Edge>();
+		Bst<Integer, Edge> bst = new Empty<Integer, Edge>();
+		
+		for(int i = 0; i < sortedVertices.size(); i++) {
+			Set<Edge> toRemove = new HashSet<Edge>();
+			//Check if the current vertex belongs to any edge in the lookOut, add them to a list of edges to remove
+			//Edges have to be removed after new edges are added, otherwise deleted edges will be just added again.
+			//We want to remove edges from lookOut so that it decreases the number of edges we have to search each time.
+			//We cannot search for which edges should remove after we add new edges because then we will delete newly added edges.
+			for(Edge e : lookOut) {
+				if(e.getOne().equals(sortedVertices.get(i)) || e.getTwo().equals(sortedVertices.get(i))) {
+					toRemove.add(e);
+					bst = bst.put(e.hashCode(), e);
+				}
 			}
+			
+			//add all edges that are connected to current vertex
+			for(Edge e : sortedVertices.get(i).getNeighbors()) {
+				lookOut.add(e);
+			}
+			
+			//Remove the edges from Lookout
+			for(Edge e : toRemove) {
+				lookOut.remove(e);
+			}
+			
 		}
-		return null;
+		return bst;
 	}
 	
 	public boolean visible(Vertex w) {
 		return false;
+	}
+	
+	public Point calculateIntersection(Edge e1, Edge e2) {
+		
+		
+		
+		return null;
+		
 	}
 }

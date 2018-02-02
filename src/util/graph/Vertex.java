@@ -47,7 +47,7 @@ public class Vertex {
 	
 	@Override
 	public String toString() {
-		return this.label.toString();
+		return "(" + label.x + ", " + label.y + ")";
 	}
 	
 	@Override
@@ -61,6 +61,6 @@ public class Vertex {
 			return false;
 		}
 		Vertex v = (Vertex) other;
-		return this.equals(v.label);
+		return this.label.equals(v.label);
 	}
 }

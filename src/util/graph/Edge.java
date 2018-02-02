@@ -1,5 +1,7 @@
 package util.graph;
 
+import java.awt.Point;
+
 public class Edge implements Comparable<Edge> {
 	private Vertex one, two;
 	private int weight;
@@ -38,8 +40,27 @@ public class Edge implements Comparable<Edge> {
 	public void setWeight(int weight) {
 		this.weight = weight;
 	}
-	
-	public boolean intersects(Edge edge) {
+
+	public Point intersectsAt(Edge e) {
+		double m = (this.two.getLabel().y - this.one.getLabel().y)/((double) this.two.getLabel().x - this.one.getLabel().x); //this gradient
+		double r = (e.two.getLabel().y - e.one.getLabel().y)/((double) e.two.getLabel().x - e.one.getLabel().x); //e gradient
+		double c = this.one.getLabel().y - m*this.one.getLabel().x; //this y-intersection
+		double b = e.one.getLabel().y - r*e.one.getLabel().x;//e y-intersection
+		
+		int intersectionX = (int) Math.round((c-b)/(r-m));
+		int intersectionY = (int) Math.round(r*(intersectionX) + b);
+		
+		boolean valid = between(this.one.getLabel().x, intersectionX, this.two.getLabel().x) && between(this.one.getLabel().y, intersectionY, this.two.getLabel().y)
+				&& between(e.one.getLabel().x, intersectionX, this.two.getLabel().x) && between(e.one.getLabel().x, intersectionX, this.two.getLabel().x);
+		
+		if(valid) return new Point(intersectionX, intersectionY);
+		return null;
+	}
+
+	private boolean between(double bound1, double point, double bound2) {
+		if ((bound1 <= point && point <= bound2) || (bound1 <= point && point <= bound2)) {
+			return true;
+		}
 		return false;
 	}
 
@@ -64,6 +85,6 @@ public class Edge implements Comparable<Edge> {
 			return false;
 		}
 		Edge edge = (Edge) other;
-		return edge.equals(this.one) && edge.two.equals(this.two);
+		return edge.one.equals(this.one) && edge.two.equals(this.two);
 	}
 }
