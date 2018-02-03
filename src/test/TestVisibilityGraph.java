@@ -19,6 +19,8 @@ public class TestVisibilityGraph {
 
 		ArrayList<Polygon> polygons = new ArrayList<Polygon>();
 		polygons.add(new Polygon(new int[] { 100, 150, 170 }, new int[] { 100, 200, 100 }, 3));
+		
+		Vertex start = new Vertex(new Point(50, 125));
 
 		// fp.shortestPath(polygons, new Point(50, 125), new Point(250, 125));
 
@@ -41,9 +43,19 @@ public class TestVisibilityGraph {
 		System.out.println(testBST.fancyToString());
 		testBST.printInOrder();*/
 		
-		Edge e1 = new Edge(new Vertex(new Point(0, 3)), new Vertex(new Point(2, 4)));
+		/*Edge e1 = new Edge(new Vertex(new Point(0, 3)), new Vertex(new Point(2, 4)));
 		Edge e2 = new Edge(new Vertex(new Point(0, 4)), new Vertex(new Point(4, 2)));
-		System.out.println(e1.intersectsAt(e2));
+		System.out.println(e1.intersectsAt(e2));*/
+		
+		LinkedList<VertexKey> sortedVertices = fp.sortVertices(start, polygons);
+		LinkedList<EdgeKey> sortedEdges = fp.sortEdges(start, sortedVertices);
+		System.out.println("number of vertices: " + sortedVertices.size());
+		System.out.println("number of edges: " + sortedEdges.size());
+		for(EdgeKey ek : sortedEdges) {
+			System.out.println("e: "+ ek.getEdge() + ", ang: " + ek.getAng() + ", dis: " + ek.getDis());
+		}
+		
+		System.out.println(fp.ccw(start, new Vertex(new Point(170, 100)), new Vertex(new Point(150, 200))));
 	}
 
 }

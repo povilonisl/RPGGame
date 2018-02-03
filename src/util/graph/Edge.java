@@ -58,7 +58,7 @@ public class Edge implements Comparable<Edge> {
 	}
 
 	private boolean between(double bound1, double point, double bound2) {
-		if ((bound1 <= point && point <= bound2) || (bound1 <= point && point <= bound2)) {
+		if ((bound1 <= point && point <= bound2) || (bound2 <= point && point <= bound1)) {
 			return true;
 		}
 		return false;
