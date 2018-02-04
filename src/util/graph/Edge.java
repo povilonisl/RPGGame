@@ -47,8 +47,9 @@ public class Edge implements Comparable<Edge> {
 		double c = this.one.getLabel().y - m*this.one.getLabel().x; //this y-intersection
 		double b = e.one.getLabel().y - r*e.one.getLabel().x;//e y-intersection
 		
+		double tempX = (c-b)/(r-m);
+		int intersectionY = (int) Math.round(r*(tempX) + b);
 		int intersectionX = (int) Math.round((c-b)/(r-m));
-		int intersectionY = (int) Math.round(r*(intersectionX) + b);
 		
 		boolean valid = between(this.one.getLabel().x, intersectionX, this.two.getLabel().x) && between(this.one.getLabel().y, intersectionY, this.two.getLabel().y)
 				&& between(e.one.getLabel().x, intersectionX, e.two.getLabel().x) && between(e.one.getLabel().y, intersectionY, e.two.getLabel().y);

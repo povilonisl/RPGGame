@@ -27,12 +27,13 @@ public class TestVisibilityGraph extends JPanel{
 	public TestVisibilityGraph(){
 		FindPath fp = new FindPath();
 		polygons = new ArrayList<Polygon>();
-		polygons.add(new Polygon(new int[] { 100, 150, 170 }, new int[] { 100, 400, 100 }, 3));
-		polygons.add(new Polygon(new int[] { 400, 300, 300 }, new int[] { 170, 200, 250 }, 3));
-		Vertex start = new Vertex(new Point(50, 125));
-		Vertex goal = new Vertex(new Point(300, 125));
+		//polygons.add(new Polygon(new int[] { 100, 150, 170 }, new int[] { 100, 400, 100  }, 3));
+		polygons.add(new Polygon(new int[] { 200, 600, 500, 300 }, new int[] { 300, 300, 400, 400 }, 4));
+		//polygons.add(new Polygon(new int[] { 180, 240, 240 }, new int[] { 300, 300, 350  }, 3));
+		Vertex start = new Vertex(new Point(400, 100));
+		//Vertex goal = new Vertex(new Point(300, 125));
 		polygons.add(new Polygon(new int[] { start.getLabel().x }, new int[] { start.getLabel().y }, 1));
-		polygons.add(new Polygon(new int[] { goal.getLabel().x }, new int[] { goal.getLabel().y }, 1));
+		//polygons.add(new Polygon(new int[] { goal.getLabel().x }, new int[] { goal.getLabel().y }, 1));
 		graph = fp.visbilityGraph(polygons);
 		for(Edge e : graph.getEdges()) {
 			System.out.println(e);
@@ -74,6 +75,11 @@ public class TestVisibilityGraph extends JPanel{
 		g2d.setColor(Color.GREEN);
 		for(Edge edge : graph.getEdges()) {
 			g2d.drawLine(edge.getOne().getLabel().x, edge.getOne().getLabel().y, edge.getTwo().getLabel().x, edge.getTwo().getLabel().y);
+		}
+		
+		g2d.setColor(Color.BLUE);
+		for(Point point : graph.getVertices()) {
+			g2d.drawString("("+point.x + ", " + point.y+")", point.x-10, point.y -10);
 		}
 		
 	}

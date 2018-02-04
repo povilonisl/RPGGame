@@ -18,6 +18,9 @@ import util.graph.Vertex;
  *
  */
 public class FindPath {
+
+	private final int INFINITY = 1000000;
+
 	public FindPath() {
 
 	}
@@ -56,45 +59,45 @@ public class FindPath {
 
 	public Set<Vertex> visibleVertices(Vertex v, ArrayList<Polygon> polygons) {
 		LinkedList<VertexKey> sortedVertices = sortVertices(v, polygons);
-		for(int i = 0; i< sortedVertices.size(); i++) {
-			if(sortedVertices.get(i).getV().equals(v)) {
+		for (int i = 0; i < sortedVertices.size(); i++) {
+			if (sortedVertices.get(i).getV().equals(v)) {
 				sortedVertices.remove(i);
 				break;
 			}
 		}
-		
+
 		LinkedList<EdgeKey> sortedEdgeKeys = sortEdges(v, sortedVertices);
-		LinkedList<EdgeKey> tempEdges = null;
 
 		Set<Vertex> visibleVertices = new HashSet<Vertex>();
 
 		for (int i = 0; i < sortedVertices.size(); i++) {
 			Vertex w = sortedVertices.get(i).getV();
+
+			
+
 			if (visible(v, w, sortedEdgeKeys)) {
 				visibleVertices.add(w);
 			}
 			
-			for(Edge e : w.getNeighbors()) {
-				
-				if(ccw(v, w, e.getNeighbor(w))>=0) {
+			for (Edge e : w.getNeighbors()) {
+
+				if (ccw(v, w, e.getNeighbor(w)) >= 0) {
 					removeEdge(e, sortedEdgeKeys);
 				}
-				
-				if(ccw(v,w, e.getNeighbor(w)) ==-1) {
-					double angleBetweenEdges = calculateVectorAngle(v.getLabel().x, v.getLabel().y,
-							w.getLabel().x, w.getLabel().y, e.getNeighbor(w).getLabel().x,
-							e.getNeighbor(w).getLabel().y);
-					EdgeKey ek = new EdgeKey(sortedVertices.get(i).getDis(), sortedVertices.get(i).getAng(), angleBetweenEdges, e);
+
+				if (ccw(v, w, e.getNeighbor(w)) == -1) {
+					double angleBetweenEdges = calculateVectorAngle(v.getLabel().x, v.getLabel().y, w.getLabel().x,
+							w.getLabel().y, e.getNeighbor(w).getLabel().x, e.getNeighbor(w).getLabel().y);
+					EdgeKey ek = new EdgeKey(sortedVertices.get(i).getDis(), sortedVertices.get(i).getAng(),
+							angleBetweenEdges, e);
 					addEdge(ek, sortedEdgeKeys);
 				}
 			}
-			
-			
-			
+
 		}
 		return visibleVertices;
 	}
-	
+
 	private void addEdge(EdgeKey ek, LinkedList<EdgeKey> sortedEdgeKeys) {
 		int i = 0;
 		boolean toAdd = true;
@@ -102,7 +105,7 @@ public class FindPath {
 			int compare = sortedEdgeKeys.get(i).compareTo(ek);
 			if (compare > 0) {
 				break;
-			}else if(compare == 0) {
+			} else if (compare == 0) {
 				return;
 			}
 			i++;
@@ -111,17 +114,15 @@ public class FindPath {
 		if (toAdd)
 			sortedEdgeKeys.add(i, ek);
 	}
-	
+
 	private void removeEdge(Edge e, LinkedList<EdgeKey> sortedEdges) {
-		for(int i = 0; i <sortedEdges.size(); i++) {
-			if(sortedEdges.get(i).getEdge().equals(e)) {
+		for (int i = 0; i < sortedEdges.size(); i++) {
+			if (sortedEdges.get(i).getEdge().equals(e)) {
 				sortedEdges.remove(i);
 				break;
 			}
 		}
 	}
-
-
 
 	public LinkedList<VertexKey> sortVertices(Vertex v, ArrayList<Polygon> polygons) {
 		LinkedList<VertexKey> sortedVertices = new LinkedList<VertexKey>();
@@ -148,7 +149,7 @@ public class FindPath {
 				dis = calculateDistance(vertexX, vertexY, tempX, tempY);
 
 				// calculate the angle between the Vertex found and the point v
-				angle = calculateAngle(vertexX, vertexY,tempX, tempY);
+				angle = calculateAngle(vertexX, vertexY, tempX, tempY);
 
 				int j = 0;
 
@@ -164,7 +165,7 @@ public class FindPath {
 					tempVertex.addNeighbor(tempEdge);
 					polyVertices.get(i + 1).addNeighbor(tempEdge);
 				} else {
-					if(!tempVertex.equals(polyVertices.get(0))) {
+					if (!tempVertex.equals(polyVertices.get(0))) {
 						Edge tempEdge = new Edge(tempVertex, polyVertices.get(0));
 						tempVertex.addNeighbor(tempEdge);
 						polyVertices.get(0).addNeighbor(tempEdge);
@@ -176,7 +177,6 @@ public class FindPath {
 
 		return sortedVertices;
 	}
-
 
 	public LinkedList<EdgeKey> sortEdges(Vertex centre, LinkedList<VertexKey> sortedVertices) {
 		LinkedList<EdgeKey> sortedEdgeKeys = new LinkedList<EdgeKey>();
@@ -199,11 +199,19 @@ public class FindPath {
 
 					EdgeKey ek;
 
-					Point intersection = edge.intersectsAt(new Edge(centre, new Vertex(
-							new Point(Math.max(edge.getNeighbor(tempV).getLabel().x, tempV.getLabel().x), centre.getLabel().y))));
+					Point intersection = edge
+							.intersectsAt(new Edge(centre, new Vertex(new Point(INFINITY, centre.getLabel().y))));
 					
-					// check if this edge is pierced by y=0 line. this is wrong. I need another way to check
-					if (intersection!=null) {
+					/*if(intersection != null && (intersectsCorners(intersection.x, intersection.y, edge.getOne().getLabel().x, edge.getOne().getLabel().y) ||
+							intersectsCorners(intersection.x, intersection.y, edge.getTwo().getLabel().x, edge.getTwo().getLabel().y))) {
+						intersection = null;
+					}*/
+					
+					
+					// check if this edge is pierced by y=0 line. this is wrong. I need another way
+					// to check
+					if (intersection != null && ccw(centre, new Vertex(new Point(INFINITY, centre.getLabel().x)),
+							edge.getNeighbor(tempV)) == 1) {
 						// find the intersection point of the edge with y=0 line
 						// Create a new edge that starts at centre and ends at farthest x of the edge
 						// and y = 0;
@@ -220,7 +228,6 @@ public class FindPath {
 						ek = new EdgeKey(vk.getDis(), vk.getAng(), angleBetweenEdges, edge);
 					}
 
-					
 					int i = 0;
 					boolean toAdd = true;
 					while (sortedEdgeKeys.size() > i) {
@@ -240,23 +247,33 @@ public class FindPath {
 		return sortedEdgeKeys;
 	}
 
+	/*
+	 * intersectsCorners(intersection.x, intersection.y, e.getOne().getLabel().x, e.getOne().getLabel().y)
+	 * 
+	 * intersection.x == e.getOne().getLabel().x && intersection.y == e.getOne().getLabel().y
+						|| intersection.x == e.getTwo().getLabel().x && intersection.y == e.getTwo().getLabel().y
+	 */
 	public boolean visible(Vertex v, Vertex w, LinkedList<EdgeKey> sortedEdgeKeys) {
-		if (sortedEdgeKeys.isEmpty()) return true;
+		if (sortedEdgeKeys.isEmpty())
+			return true;
 		else {
 			Edge e = sortedEdgeKeys.get(0).getEdge();
 			Point intersection = e.intersectsAt(new Edge(v, w));
-			if(intersection != null) {
-				if(intersection.x == e.getOne().getLabel().x && intersection.y == e.getOne().getLabel().y ||
-						intersection.x == e.getTwo().getLabel().x && intersection.y == e.getTwo().getLabel().y) {
+			if (intersection != null) {
+				if (intersectsCorners(intersection.x, intersection.y, e.getOne().getLabel().x, e.getOne().getLabel().y) ||
+						intersectsCorners(intersection.x, intersection.y, e.getTwo().getLabel().x, e.getTwo().getLabel().y)) {
 					return true;
 				}
-			}else {
+			} else {
 				return true;
 			}
 		}
 		return false;
 	}
-
+	
+	private boolean intersectsCorners(int x1, int y1, int x2, int y2) {
+		return x1 == x2 && y1 == y2;
+	}
 
 	private double calculateVectorAngle(int x1, int y1, int x2, int y2, int x3, int y3) {
 		double[] v1 = new double[] { x2 - x1, y2 - y1 };
@@ -266,49 +283,58 @@ public class FindPath {
 
 		return angle;
 	}
-	
+
 	private double calculateDistance(int x1, int y1, int x2, int y2) {
 		return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 	}
 
-	private double calculateAngle(int x1, int y1 , int x2, int y2) {
+	private double calculateAngle(int x1, int y1, int x2, int y2) {
 		double arctan = Math.atan(Math.abs(y2 - y1) / ((double) Math.abs(x2 - x1)));
-		
+
 		if (Math.signum(y2 - y1) == 1) {
-			if(Math.signum(x2-x1) == 1) {
-				arctan = 2*Math.PI - arctan;
-			}else {
+			if (Math.signum(x2 - x1) == 1) {
+				arctan = 2 * Math.PI - arctan;
+			} else {
 				arctan += Math.PI;
 			}
-		}else
-			if (Math.signum(x2 - x1) == -1) {
-				arctan = Math.PI - arctan;
+		} else if (Math.signum(x2 - x1) == -1) {
+			arctan = Math.PI - arctan;
 		}
 
 		return arctan;
 	}
-	
+
 	/**
 	 * 
 	 * 
-	 * @param v1 centre
-	 * @param v2 focus vertex
-	 * @param v3 vertex that is connected by the edge from focus
+	 * @param v1
+	 *            centre
+	 * @param v2
+	 *            focus vertex
+	 * @param v3
+	 *            vertex that is connected by the edge from focus
 	 * @return 1 if counter clockwise, -1 if clock wise
 	 */
 	public int ccw(Vertex v1, Vertex v2, Vertex v3) {
 		int area = 0;
-		    area = ((v2.getLabel().x - v1.getLabel().x) * (v3.getLabel().y - v1.getLabel().y) - (v2.getLabel().y - v1.getLabel().y) * (v3.getLabel().x - v1.getLabel().x));
-		    if (area > 0) return 1;
-		    if (area < 0) return -1;
+		area = ((v2.getLabel().x - v1.getLabel().x) * (v3.getLabel().y - v1.getLabel().y)
+				- (v2.getLabel().y - v1.getLabel().y) * (v3.getLabel().x - v1.getLabel().x));
+		if (area > 0)
+			return 1;
+		if (area < 0)
+			return -1;
 		return 0;
 	}
-	
+
 	public int ccw2(Vertex v1, Vertex v2, Vertex v3) {
 		int area = 0;
-		    area = (v1.getLabel().x*v2.getLabel().y - v2.getLabel().x*v1.getLabel().y) + (v2.getLabel().x*v3.getLabel().y - v3.getLabel().x*v2.getLabel().y) + (v3.getLabel().x*v1.getLabel().y - v1.getLabel().x*v3.getLabel().y) ;
-		    if (area > 0) return 1;
-		    if (area < 0) return -1;
+		area = (v1.getLabel().x * v2.getLabel().y - v2.getLabel().x * v1.getLabel().y)
+				+ (v2.getLabel().x * v3.getLabel().y - v3.getLabel().x * v2.getLabel().y)
+				+ (v3.getLabel().x * v1.getLabel().y - v1.getLabel().x * v3.getLabel().y);
+		if (area > 0)
+			return 1;
+		if (area < 0)
+			return -1;
 		return 0;
 	}
 

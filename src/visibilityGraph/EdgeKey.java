@@ -64,4 +64,10 @@ public class EdgeKey implements Comparable<EdgeKey> {
 	public Edge getEdge() {
 		return edge;
 	}
+	
+	@Override
+	public String toString() {
+		return this.getEdge().toString() + ", Ang: " + this.ang + ", Dis: " + this.dis + ", Ang2: " + this.ang2;
+		
+	}
 }

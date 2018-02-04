@@ -44,4 +44,8 @@ public class VertexKey implements Comparable<VertexKey> {
 	}
 
 
+	@Override
+	public String toString() {
+		return this.getV().toString();
+	}
 }
