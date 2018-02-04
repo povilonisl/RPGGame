@@ -30,7 +30,7 @@ public class EdgeKey implements Comparable<EdgeKey> {
 
 		if (compareVar(ek.ang, this.ang) == 0) {
 			if (compareVar(ek.dis, this.dis) == 0) {
-				return compareVar(ek.ang2, this.ang2);
+				return compareVar(this.ang2, ek.ang2);
 			} else {
 				return compareVar(ek.dis, this.dis);
 			}
