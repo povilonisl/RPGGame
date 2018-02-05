@@ -85,10 +85,10 @@ public class FindPath {
 		for (int i = 0; i < sortedVertices.size(); i++) {
 			Vertex w = sortedVertices.get(i).getV();
 
-			if (v.getNeighborCount() > 0) {
-				if ((v.getNeighbor(0).getNeighbor(v).equals(w) || v.getNeighbor(1).getNeighbor(v).equals(w))) {
-					visibleVertices.add(w);
-				}
+			if (v.getNeighborCount() > 0
+					&& (v.getNeighbor(0).getNeighbor(v).equals(w) || v.getNeighbor(1).getNeighbor(v).equals(w))) {
+				visibleVertices.add(w);
+
 			} else if ((visible(v, sortedVertices.get(i), sortedEdgeKeys) && !crossingNumber(v, w, sortedEdges))) {
 				visibleVertices.add(w);
 			}
@@ -290,14 +290,15 @@ public class FindPath {
 		if (sortedEdgeKeys.isEmpty())
 			return true;
 		else {
-			for(EdgeKey ek : sortedEdgeKeys) {
+			for (EdgeKey ek : sortedEdgeKeys) {
 				Point intersection = ek.getEdge().intersectsAt(new Edge(v, wk.getV()));
 				if (intersection != null) {
-					if (intersectsCorners(intersection.x, intersection.y, ek.getEdge().getOne().getLabel().x, ek.getEdge().getOne().getLabel().y)
+					if (intersectsCorners(intersection.x, intersection.y, ek.getEdge().getOne().getLabel().x,
+							ek.getEdge().getOne().getLabel().y)
 							|| intersectsCorners(intersection.x, intersection.y, ek.getEdge().getTwo().getLabel().x,
 									ek.getEdge().getTwo().getLabel().y)) {
 						continue;
-					}else {
+					} else {
 						return false;
 					}
 				}
