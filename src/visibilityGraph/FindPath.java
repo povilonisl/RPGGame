@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.Vector;
 
 import util.graph.Edge;
 import util.graph.Graph;
@@ -38,16 +39,21 @@ public class FindPath {
 		for (int i = 0; i < polygons.size(); i++) {
 			tempPoly = polygons.get(i);
 			for (int j = 0; j < tempPoly.npoints; j++) {
-				vertices.add(new Vertex(new Point(tempPoly.xpoints[j], tempPoly.ypoints[j])));
+				Vertex temp = new Vertex(new Point(tempPoly.xpoints[j], tempPoly.ypoints[j]));
+				temp.setPolygonID(i);
+				vertices.add(temp);
 			}
 		}
 		Graph g = new Graph(vertices);
 
 		Vertex v;
 		Set<Vertex> visibleVertices;
+		Vertex prev = null;
+		Vertex prevVisible = null;
+		
 		for (Point label : g.getVertices()) {
-			// System.out.println(s);
-			v = g.getVertex(label);
+			v = g.getVertex(label);	
+			
 			visibleVertices = visibleVertices(v, polygons);
 			for (Vertex w : visibleVertices) {
 				g.addEdge(v, w, 1);
@@ -57,28 +63,36 @@ public class FindPath {
 		return g;
 	}
 
-	public Set<Vertex> visibleVertices(Vertex v, ArrayList<Polygon> polygons) {
-		LinkedList<VertexKey> sortedVertices = sortVertices(v, polygons);
+	public Set<Vertex> visibleVertices(Vertex point, ArrayList<Polygon> polygons) {
+		LinkedList<VertexKey> sortedVertices = sortVertices(point, polygons);
+		Vertex v = null;
 		for (int i = 0; i < sortedVertices.size(); i++) {
-			if (sortedVertices.get(i).getV().equals(v)) {
+			if (sortedVertices.get(i).getV().equals(point)) {
+				v = sortedVertices.get(i).getV();
 				sortedVertices.remove(i);
 				break;
 			}
 		}
 
 		LinkedList<EdgeKey> sortedEdgeKeys = sortEdges(v, sortedVertices);
+		LinkedList<Edge> sortedEdges = new LinkedList<Edge>();
+		for (EdgeKey ek : sortedEdgeKeys) {
+			sortedEdges.add(ek.getEdge());
+		}
 
 		Set<Vertex> visibleVertices = new HashSet<Vertex>();
 
 		for (int i = 0; i < sortedVertices.size(); i++) {
 			Vertex w = sortedVertices.get(i).getV();
 
-			
-
-			if (visible(v, w, sortedEdgeKeys)) {
+			if(v.getNeighborCount() > 0) {
+				if((v.getNeighbor(0).getNeighbor(v).equals(w) || v.getNeighbor(1).getNeighbor(v).equals(w))) {
+					visibleVertices.add(w);
+				}
+			}else if ((visible(v, w, sortedEdgeKeys) && !crossingNumber(v, w, sortedEdges))) {
 				visibleVertices.add(w);
 			}
-			
+
 			for (Edge e : w.getNeighbors()) {
 
 				if (ccw(v, w, e.getNeighbor(w)) >= 0) {
@@ -136,15 +150,17 @@ public class FindPath {
 		double angle;
 		double dis;
 
-		for (Polygon p : polygons) {
+		for (int p = 0; p < polygons.size(); p++) {
 			LinkedList<Vertex> polyVertices = new LinkedList<Vertex>();
-			for (int i = 0; i < p.npoints; i++) {
-				polyVertices.add(new Vertex(new Point(p.xpoints[i], p.ypoints[i])));
+			for (int i = 0; i < polygons.get(p).npoints; i++) {
+				Vertex temp = new Vertex(new Point(polygons.get(p).xpoints[i], polygons.get(p).ypoints[i]));
+				temp.setPolygonID(p);
+				polyVertices.add(temp);
 			}
 
-			for (int i = 0; i < p.npoints; i++) {
-				tempX = p.xpoints[i];
-				tempY = p.ypoints[i];
+			for (int i = 0; i < polygons.get(p).npoints; i++) {
+				tempX = polygons.get(p).xpoints[i];
+				tempY = polygons.get(p).ypoints[i];
 
 				dis = calculateDistance(vertexX, vertexY, tempX, tempY);
 
@@ -155,8 +171,13 @@ public class FindPath {
 
 				// find the correct place for the vertex
 				while (sortedVertices.size() > j) {
-					if (sortedVertices.get(j).getAng() > angle)
+					if (sortedVertices.get(j).getAng() > angle) {
 						break;
+					}else if(sortedVertices.get(j).getAng() == angle) {
+						if(sortedVertices.get(j).getDis() > dis) {
+							break;
+						}
+					}
 					j++;
 				}
 				Vertex tempVertex = polyVertices.get(i);
@@ -174,7 +195,6 @@ public class FindPath {
 				sortedVertices.add(j, new VertexKey(angle, dis, tempVertex));
 			}
 		}
-
 		return sortedVertices;
 	}
 
@@ -201,13 +221,14 @@ public class FindPath {
 
 					Point intersection = edge
 							.intersectsAt(new Edge(centre, new Vertex(new Point(INFINITY, centre.getLabel().y))));
-					
-					/*if(intersection != null && (intersectsCorners(intersection.x, intersection.y, edge.getOne().getLabel().x, edge.getOne().getLabel().y) ||
-							intersectsCorners(intersection.x, intersection.y, edge.getTwo().getLabel().x, edge.getTwo().getLabel().y))) {
-						intersection = null;
-					}*/
-					
-					
+
+					/*
+					 * if(intersection != null && (intersectsCorners(intersection.x, intersection.y,
+					 * edge.getOne().getLabel().x, edge.getOne().getLabel().y) ||
+					 * intersectsCorners(intersection.x, intersection.y, edge.getTwo().getLabel().x,
+					 * edge.getTwo().getLabel().y))) { intersection = null; }
+					 */
+
 					// check if this edge is pierced by y=0 line. this is wrong. I need another way
 					// to check
 					if (intersection != null && ccw(centre, new Vertex(new Point(INFINITY, centre.getLabel().x)),
@@ -248,10 +269,12 @@ public class FindPath {
 	}
 
 	/*
-	 * intersectsCorners(intersection.x, intersection.y, e.getOne().getLabel().x, e.getOne().getLabel().y)
+	 * intersectsCorners(intersection.x, intersection.y, e.getOne().getLabel().x,
+	 * e.getOne().getLabel().y)
 	 * 
-	 * intersection.x == e.getOne().getLabel().x && intersection.y == e.getOne().getLabel().y
-						|| intersection.x == e.getTwo().getLabel().x && intersection.y == e.getTwo().getLabel().y
+	 * intersection.x == e.getOne().getLabel().x && intersection.y ==
+	 * e.getOne().getLabel().y || intersection.x == e.getTwo().getLabel().x &&
+	 * intersection.y == e.getTwo().getLabel().y
 	 */
 	public boolean visible(Vertex v, Vertex w, LinkedList<EdgeKey> sortedEdgeKeys) {
 		if (sortedEdgeKeys.isEmpty())
@@ -260,8 +283,9 @@ public class FindPath {
 			Edge e = sortedEdgeKeys.get(0).getEdge();
 			Point intersection = e.intersectsAt(new Edge(v, w));
 			if (intersection != null) {
-				if (intersectsCorners(intersection.x, intersection.y, e.getOne().getLabel().x, e.getOne().getLabel().y) ||
-						intersectsCorners(intersection.x, intersection.y, e.getTwo().getLabel().x, e.getTwo().getLabel().y)) {
+				if (intersectsCorners(intersection.x, intersection.y, e.getOne().getLabel().x, e.getOne().getLabel().y)
+						|| intersectsCorners(intersection.x, intersection.y, e.getTwo().getLabel().x,
+								e.getTwo().getLabel().y)) {
 					return true;
 				}
 			} else {
@@ -270,7 +294,7 @@ public class FindPath {
 		}
 		return false;
 	}
-	
+
 	private boolean intersectsCorners(int x1, int y1, int x2, int y2) {
 		return x1 == x2 && y1 == y2;
 	}
@@ -326,16 +350,93 @@ public class FindPath {
 		return 0;
 	}
 
-	public int ccw2(Vertex v1, Vertex v2, Vertex v3) {
-		int area = 0;
-		area = (v1.getLabel().x * v2.getLabel().y - v2.getLabel().x * v1.getLabel().y)
-				+ (v2.getLabel().x * v3.getLabel().y - v3.getLabel().x * v2.getLabel().y)
-				+ (v3.getLabel().x * v1.getLabel().y - v1.getLabel().x * v3.getLabel().y);
-		if (area > 0)
-			return 1;
-		if (area < 0)
-			return -1;
-		return 0;
+	public boolean crossingNumber(Vertex v1, Vertex v2, LinkedList<Edge> sortedEdges) {
+		if (v1.getPolygonID() == -1 || v2.getPolygonID() == -1)
+			return false;
+
+		if (v1.getPolygonID() == v2.getPolygonID()) {
+			LinkedList<Edge> polyEdges = new LinkedList<Edge>();
+			for (Edge e : sortedEdges) {
+				if (e.getOne().getPolygonID() == v1.getPolygonID())
+					polyEdges.add(e);
+			}
+
+			Vertex midPoint = new Vertex(
+					new Point((v1.getLabel().x + v2.getLabel().x) / 2, (v1.getLabel().y + v2.getLabel().y) / 2));
+			Vertex midPoint2 = new Vertex(new Point(INFINITY, midPoint.getLabel().y));
+
+			int intersectionCount = 0;
+			boolean co_flag = false;
+			int co_dir = 0;
+
+			for (Edge edge : polyEdges) {
+				if (midPoint.getLabel().y < edge.getOne().getLabel().y
+						&& midPoint.getLabel().y < edge.getTwo().getLabel().y)
+					continue;
+				if (midPoint.getLabel().y > edge.getOne().getLabel().y
+						&& midPoint.getLabel().y > edge.getTwo().getLabel().y)
+					continue;
+
+				boolean co0 = (ccw(midPoint, edge.getOne(), midPoint2) == 0)
+						&& (edge.getOne().getLabel().x > midPoint.getLabel().x);
+				boolean co1 = (ccw(midPoint, edge.getTwo(), midPoint2) == 0)
+						&& (edge.getTwo().getLabel().x > midPoint.getLabel().x);
+				Vertex co_point = null;
+
+				if (co0)
+					co_point = edge.getOne();
+				else
+					co_point = edge.getTwo();
+
+				if (co0 || co1) {
+					if (edge.getNeighbor(co_point).getLabel().y > midPoint.getLabel().y) {
+						co_dir += 1;
+					} else {
+						co_dir -= 1;
+					}
+
+					if (co_flag) {
+						if (co_dir == 0) {
+							intersectionCount += 1;
+						}
+						co_flag = false;
+						co_dir = 0;
+					} else {
+						co_flag = true;
+					}
+
+				} else {
+					Point p = edge.intersectsAt(new Edge(midPoint, midPoint2));
+					if (p != null) {
+						intersectionCount += 1;
+					}
+				}
+			}
+
+			if (intersectionCount % 2 == 0) {
+				return false;
+			}
+			return true;
+		} else {
+			return false;
+		}
 	}
 
+	public boolean edge_intersect(Vertex v11, Vertex v12, Edge edge) {
+		Vertex v21 = edge.getOne();
+		Vertex v22 = edge.getTwo();
+		int o1 = ccw(v11, v12, v21);
+		int o2 = ccw (v11, v12, v22);
+		int o3 = ccw(v21, v22, v11);
+		int o4 = ccw(v21, v22, v12);
+		
+		if(o1 != o2 && o3 != o4) {
+			return true;
+		}
+		if(o1 == 0 ) {
+			
+		}
+		
+		return false;
+	}
 }

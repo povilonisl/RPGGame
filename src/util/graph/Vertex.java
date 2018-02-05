@@ -8,10 +8,20 @@ public class Vertex {
 	private ArrayList<Edge> neighbors;
 	//private String label;
 	private Point label;
+	private int polygonID;
 	
 	public Vertex(Point label) {
 		this.label = label;
 		this.neighbors = new ArrayList<Edge>();
+		this.polygonID = -1;
+	}
+	
+	public int getPolygonID() {
+		return polygonID;
+	}
+
+	public void setPolygonID(int polygonID) {
+		this.polygonID = polygonID;
 	}
 	
 	public void addNeighbor(Edge edge) {
