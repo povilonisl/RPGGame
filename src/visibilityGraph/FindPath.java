@@ -50,10 +50,10 @@ public class FindPath {
 		Set<Vertex> visibleVertices;
 		Vertex prev = null;
 		Vertex prevVisible = null;
-		
+
 		for (Point label : g.getVertices()) {
-			v = g.getVertex(label);	
-			
+			v = g.getVertex(label);
+
 			visibleVertices = visibleVertices(v, polygons);
 			for (Vertex w : visibleVertices) {
 				g.addEdge(v, w, 1);
@@ -85,11 +85,11 @@ public class FindPath {
 		for (int i = 0; i < sortedVertices.size(); i++) {
 			Vertex w = sortedVertices.get(i).getV();
 
-			if(v.getNeighborCount() > 0) {
-				if((v.getNeighbor(0).getNeighbor(v).equals(w) || v.getNeighbor(1).getNeighbor(v).equals(w))) {
+			if (v.getNeighborCount() > 0) {
+				if ((v.getNeighbor(0).getNeighbor(v).equals(w) || v.getNeighbor(1).getNeighbor(v).equals(w))) {
 					visibleVertices.add(w);
 				}
-			}else if ((visible(v, w, sortedEdgeKeys) && !crossingNumber(v, w, sortedEdges))) {
+			} else if ((visible(v, sortedVertices.get(i), sortedEdgeKeys) && !crossingNumber(v, w, sortedEdges))) {
 				visibleVertices.add(w);
 			}
 
@@ -105,6 +105,16 @@ public class FindPath {
 					EdgeKey ek = new EdgeKey(sortedVertices.get(i).getDis(), sortedVertices.get(i).getAng(),
 							angleBetweenEdges, e);
 					addEdge(ek, sortedEdgeKeys);
+					/*
+					 * for(int j = 0; j < sortedEdgeKeys.size(); j++) {
+					 * if(sortedEdgeKeys.get(j).getEdge().equals(e)) { sortedEdgeKeys.remove(j);
+					 * break; } }
+					 * 
+					 * if(sortedEdgeKeys.get(0).getAng() == ek.getAng() &&
+					 * sortedEdgeKeys.get(0).getDis() == ek.getDis()) {
+					 * if(sortedEdgeKeys.get(0).compareTo(ek) == 1) { sortedEdgeKeys.add(0, ek);
+					 * }else { sortedEdgeKeys.add(1,ek); } }else { sortedEdgeKeys.add(0,ek); }
+					 */
 				}
 			}
 
@@ -173,8 +183,8 @@ public class FindPath {
 				while (sortedVertices.size() > j) {
 					if (sortedVertices.get(j).getAng() > angle) {
 						break;
-					}else if(sortedVertices.get(j).getAng() == angle) {
-						if(sortedVertices.get(j).getDis() > dis) {
+					} else if (sortedVertices.get(j).getAng() == angle) {
+						if (sortedVertices.get(j).getDis() > dis) {
 							break;
 						}
 					}
@@ -276,23 +286,24 @@ public class FindPath {
 	 * e.getOne().getLabel().y || intersection.x == e.getTwo().getLabel().x &&
 	 * intersection.y == e.getTwo().getLabel().y
 	 */
-	public boolean visible(Vertex v, Vertex w, LinkedList<EdgeKey> sortedEdgeKeys) {
+	public boolean visible(Vertex v, VertexKey wk, LinkedList<EdgeKey> sortedEdgeKeys) {
 		if (sortedEdgeKeys.isEmpty())
 			return true;
 		else {
-			Edge e = sortedEdgeKeys.get(0).getEdge();
-			Point intersection = e.intersectsAt(new Edge(v, w));
-			if (intersection != null) {
-				if (intersectsCorners(intersection.x, intersection.y, e.getOne().getLabel().x, e.getOne().getLabel().y)
-						|| intersectsCorners(intersection.x, intersection.y, e.getTwo().getLabel().x,
-								e.getTwo().getLabel().y)) {
-					return true;
+			for(EdgeKey ek : sortedEdgeKeys) {
+				Point intersection = ek.getEdge().intersectsAt(new Edge(v, wk.getV()));
+				if (intersection != null) {
+					if (intersectsCorners(intersection.x, intersection.y, ek.getEdge().getOne().getLabel().x, ek.getEdge().getOne().getLabel().y)
+							|| intersectsCorners(intersection.x, intersection.y, ek.getEdge().getTwo().getLabel().x,
+									ek.getEdge().getTwo().getLabel().y)) {
+						continue;
+					}else {
+						return false;
+					}
 				}
-			} else {
-				return true;
 			}
+			return true;
 		}
-		return false;
 	}
 
 	private boolean intersectsCorners(int x1, int y1, int x2, int y2) {
@@ -426,17 +437,17 @@ public class FindPath {
 		Vertex v21 = edge.getOne();
 		Vertex v22 = edge.getTwo();
 		int o1 = ccw(v11, v12, v21);
-		int o2 = ccw (v11, v12, v22);
+		int o2 = ccw(v11, v12, v22);
 		int o3 = ccw(v21, v22, v11);
 		int o4 = ccw(v21, v22, v12);
-		
-		if(o1 != o2 && o3 != o4) {
+
+		if (o1 != o2 && o3 != o4) {
 			return true;
 		}
-		if(o1 == 0 ) {
-			
+		if (o1 == 0) {
+
 		}
-		
+
 		return false;
 	}
 }
