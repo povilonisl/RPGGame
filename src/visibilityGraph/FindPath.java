@@ -82,42 +82,62 @@ public class FindPath {
 
 		Set<Vertex> visibleVertices = new HashSet<Vertex>();
 
+		Vertex prevVertex = null;
+		boolean prevIsVisible = false;
+		boolean visible = true;
+
 		for (int i = 0; i < sortedVertices.size(); i++) {
 			Vertex w = sortedVertices.get(i).getV();
+			visible = false;
 
-			if (v.getNeighborCount() > 0
+			// if the current and last point is colinear
+			if (prevVertex != null && ccw(v, prevVertex, w) == 0) {
+				if (prevIsVisible == true) {
+					if(prevVertex.getNeighborCount() > 0
+							&& (prevVertex.getNeighbor(0).getNeighbor(prevVertex).equals(w) || prevVertex.getNeighbor(1).getNeighbor(prevVertex).equals(w))) {
+						visible = true;
+					}
+					if ((visible(prevVertex, sortedVertices.get(i), sortedEdgeKeys)
+							&& !crossingNumber(prevVertex, w, sortedEdges))) {
+						visible = true;
+					}
+				}
+
+				// check for inner edges
+			} else if (v.getNeighborCount() > 0
 					&& (v.getNeighbor(0).getNeighbor(v).equals(w) || v.getNeighbor(1).getNeighbor(v).equals(w))) {
-				visibleVertices.add(w);
+				visible = true;
 
+				// non-colinear points, check for intersection
 			} else if ((visible(v, sortedVertices.get(i), sortedEdgeKeys) && !crossingNumber(v, w, sortedEdges))) {
-				visibleVertices.add(w);
+				visible = true;
 			}
 
 			for (Edge e : w.getNeighbors()) {
 
+				// remove edges in the opposite of half line.
 				if (ccw(v, w, e.getNeighbor(w)) >= 0) {
 					removeEdge(e, sortedEdgeKeys);
 				}
 
+				// add edges in the direction that half line moves
 				if (ccw(v, w, e.getNeighbor(w)) == -1) {
 					double angleBetweenEdges = calculateVectorAngle(v.getLabel().x, v.getLabel().y, w.getLabel().x,
 							w.getLabel().y, e.getNeighbor(w).getLabel().x, e.getNeighbor(w).getLabel().y);
 					EdgeKey ek = new EdgeKey(sortedVertices.get(i).getDis(), sortedVertices.get(i).getAng(),
 							angleBetweenEdges, e);
 					addEdge(ek, sortedEdgeKeys);
-					/*
-					 * for(int j = 0; j < sortedEdgeKeys.size(); j++) {
-					 * if(sortedEdgeKeys.get(j).getEdge().equals(e)) { sortedEdgeKeys.remove(j);
-					 * break; } }
-					 * 
-					 * if(sortedEdgeKeys.get(0).getAng() == ek.getAng() &&
-					 * sortedEdgeKeys.get(0).getDis() == ek.getDis()) {
-					 * if(sortedEdgeKeys.get(0).compareTo(ek) == 1) { sortedEdgeKeys.add(0, ek);
-					 * }else { sortedEdgeKeys.add(1,ek); } }else { sortedEdgeKeys.add(0,ek); }
-					 */
 				}
 			}
-
+			
+			if(visible) {
+				visibleVertices.add(w);
+				prevIsVisible = true;
+			}else {
+				prevIsVisible = false;
+			}
+			prevVertex = w;
+			
 		}
 		return visibleVertices;
 	}
@@ -290,8 +310,10 @@ public class FindPath {
 		if (sortedEdgeKeys.isEmpty())
 			return true;
 		else {
+			// if it intersects then it's not visible, unless it's the corner
 			for (EdgeKey ek : sortedEdgeKeys) {
-				Point intersection = ek.getEdge().intersectsAt(new Edge(v, wk.getV()));
+				// Point intersection = ek.getEdge().intersectsAt(new Edge(v, wk.getV()));
+				Point intersection = edgeIntersection(ek.getEdge(), new Edge(v, wk.getV()));
 				if (intersection != null) {
 					if (intersectsCorners(intersection.x, intersection.y, ek.getEdge().getOne().getLabel().x,
 							ek.getEdge().getOne().getLabel().y)
@@ -451,4 +473,58 @@ public class FindPath {
 
 		return false;
 	}
+
+	/**
+	 * Get the intersection between two edges
+	 * 
+	 * @param edge1
+	 *            first edge/segment
+	 * @param edge2
+	 *            second edge/segment
+	 * @return the point where they intersect, if they do
+	 */
+	public Point edgeIntersection(Edge edge1, Edge edge2) {
+		/*
+		 * p1 + s*v1 = l1 p2 + t*v2 = l2
+		 */
+
+		double[] e1Start = { edge1.getOne().getLabel().x, edge1.getOne().getLabel().y }; // s
+		double[] e1Vector = { edge1.getTwo().getLabel().x - e1Start[0], edge1.getTwo().getLabel().y - e1Start[1] }; // t
+
+		double[] e2Start = { edge2.getOne().getLabel().x, edge2.getOne().getLabel().y };
+		double[] e2Vector = { edge2.getTwo().getLabel().x - e2Start[0], edge2.getTwo().getLabel().y - e2Start[1] };
+
+		double s = 0;
+
+		// special cases for division by 0
+		if (e2Vector[0] == 0) {
+			s = (e2Start[0] - e1Start[0]) / e1Vector[0];
+		} else if (e1Vector[1] - (e2Vector[1] * e1Vector[0]) / ((double) e2Vector[0]) == 0) {
+			s = 0;
+		} else {
+			s = (e2Start[1] + e2Vector[1] * ((e1Start[0] - e2Start[0]) / ((double) e2Vector[0])) - e1Start[1])
+					/ ((double) e1Vector[1] - (e2Vector[1] * e1Vector[0]) / ((double) e2Vector[0]));
+		}
+
+		Point intersection = new Point((int) Math.round(e1Start[0] + s * e1Vector[0]),
+				(int) Math.round(e1Start[1] + s * e1Vector[1]));
+
+		// check if the intersection is in range of the segments
+		boolean valid = between(e1Start[0], intersection.x, e1Start[0] + e1Vector[0])
+				&& between(e1Start[1], intersection.y, e1Start[1] + e1Vector[1])
+				&& between(e2Start[0], intersection.x, e2Start[0] + e2Vector[0])
+				&& between(e2Start[1], intersection.y, e2Start[1] + e2Vector[1]);
+
+		if (valid)
+			return intersection;
+		return null;
+	}
+
+	private boolean between(double bound1, double point, double bound2) {
+		if ((bound1 <= point && point <= bound2) || (bound2 <= point && point <= bound1)) {
+			return true;
+		}
+		return false;
+	}
+
 }

@@ -27,9 +27,9 @@ public class TestVisibilityGraph extends JPanel{
 	public TestVisibilityGraph(){
 		FindPath fp = new FindPath();
 		polygons = new ArrayList<Polygon>();
-		//polygons.add(new Polygon(new int[] { 100, 150, 170 }, new int[] { 100, 400, 100  }, 3));
+		polygons.add(new Polygon(new int[] { 100, 150, 170 }, new int[] { 100, 400, 100  }, 3));
 		polygons.add(new Polygon(new int[] { 200, 600, 500, 400, 300 }, new int[] { 300, 300, 400, 500, 400 }, 5));
-		//polygons.add(new Polygon(new int[] { 330, 640, 640 }, new int[] { 250, 200, 250  }, 3));
+		polygons.add(new Polygon(new int[] { 330, 640, 640 }, new int[] { 250, 200, 250  }, 3));
 		Vertex start = new Vertex(new Point(400, 100));
 		//Vertex goal = new Vertex(new Point(300, 125));
 		polygons.add(new Polygon(new int[] { start.getLabel().x }, new int[] { start.getLabel().y }, 1));
